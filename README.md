@@ -1,21 +1,21 @@
 
 
-**gamelist_utils README**
+**find_unscraped_games README**
 ==========================
 
 **Project Overview**
 -------------------
 
-gamelist_utils is a Python script designed to help manage and organize game data by identifying unscraped games in a ROM folder. The script uses the `gamelist.xml` file to determine which games have already been scraped and compares this list to the actual ROM files in the folder. It then generates a text file and a batch file to help move the unscraped games to a designated folder.
+find_unscraped_games is a Python script designed to help manage and organize game data by identifying unscraped games in a ROM folder. The script uses the `gamelist.xml` file to determine which games have already been scraped and compares this list to the actual ROM files in the folder. It then generates a text file and a batch file to help move the unscraped games to a designated folder.
 
 **Usage**
 ---------
 
-To use gamelist_utils, follow these steps:
+To use find_unscraped_games, follow these steps:
 
 1. **Install dependencies**: Make sure you have Python installed on your system. The script also uses the `typer` library, which can be installed using pip: `pip install typer`.
 2. **Prepare your ROM folder**: Ensure that your ROM folder contains the `gamelist.xml` file and the ROM files you want to scan.
-3. **Run the script**: Execute the script using Python: `python gamelist_utils.py`.
+3. **Run the script**: Execute the script using Python: `python find_unscraped_games.py`.
 4. **Provide input**: The script will prompt you to provide the following inputs:
 	* `rom_folder`: The path to the ROM folder to scan.
 	* `output_txt`: The output text file listing unscraped games (default: `unscraped_games.txt`).
@@ -28,9 +28,9 @@ To use gamelist_utils, follow these steps:
 
 Here are some examples of how to use the script:
 
-* **Basic usage**: `python gamelist_utils.py --rom_folder /path/to/rom/folder`
-* **Custom output files**: `python gamelist_utils.py --rom_folder /path/to/rom/folder --output_txt my_unscraped_games.txt --output_bat my_move_unscraped_games.bat`
-* **Custom move folder**: `python gamelist_utils.py --rom_folder /path/to/rom/folder --move_folder my_unscraped_folder`
+* **Basic usage**: `python find_unscraped_games.py --rom_folder /path/to/rom/folder`
+* **Custom output files**: `python find_unscraped_games.py --rom_folder /path/to/rom/folder --output_txt my_unscraped_games.txt --output_bat my_move_unscraped_games.bat`
+* **Custom move folder**: `python find_unscraped_games.py --rom_folder /path/to/rom/folder --move_folder my_unscraped_folder`
 
 **Troubleshooting**
 -----------------
@@ -44,9 +44,9 @@ If you encounter any issues while running the script, check the following:
 **License**
 ----------
 
-gamelist_utils is released under the MIT License. See the LICENSE file for details.
+find_unscraped_games is released under the MIT License. See the LICENSE file for details.
 
 **Contributing**
 ---------------
 
-Contributions to gamelist_utils are welcome. If you have any suggestions, bug reports, or feature requests, please open an issue on the GitHub repository.
+Contributions to find_unscraped_games are welcome. If you have any suggestions, bug reports, or feature requests, please open an issue on the GitHub repository.
