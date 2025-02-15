@@ -33,6 +33,10 @@ def find_unscraped_games(
     # Find games without scraped data
     unscraped_games = sorted(all_roms - scraped_games)
 
+    # Create the move folder if it doesn't exist
+    if not move_folder_path.exists():
+        move_folder_path.mkdir()
+
     if not unscraped_games:
         typer.echo("All games have scraped data. No files to move.")
         return
