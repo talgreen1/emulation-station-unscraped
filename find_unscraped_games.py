@@ -3,16 +3,27 @@ import typer
 import os
 from pathlib import Path
 
+# Constants for output file names and directories
+UNSCRAPED_TXT = "#unscraped_games.txt"
+UNSCRAPED_BAT = "#move_unscraped_games.bat"
+NO_IMAGE_TXT = "#games_without_images.txt"
+NO_IMAGE_BAT = "#move_games_without_images.bat"
+INVALID_NAME_TXT = "#games_invalid_names.txt"
+INVALID_NAME_BAT = "#move_games_invalid_names.bat"
+
+MISSING_GAMES_FOLDER = "missing_games"
+NO_IMAGE_FOLDER = "no_image_games"
+INVALID_NAME_FOLDER = "invalid_name_games"
+
 
 def find_unscraped_games(
         rom_folder: str = typer.Argument(..., help="Path to the ROM folder to scan."),
-        output_txt: str = typer.Option("unscraped_games.txt", help="Output text file listing unscraped games."),
-        output_bat: str = typer.Option("move_unscraped_games.bat", help="Batch file to move unscraped games."),
-        move_folder: str = typer.Option("unscraped", help="Folder where unscraped games will be moved.")
+        find_missing: bool = typer.Option(True, help="Find games not found in the gamelist."),
+        find_no_image: bool = typer.Option(True, help="Find games without an <image> tag."),
+        find_invalid_name: bool = typer.Option(True, help="Find games where <name> starts with 'ZZZ(notgame)'.")
 ):
     rom_folder = Path(rom_folder).resolve()
     gamelist_path = rom_folder / "gamelist.xml"
-    move_folder_path = rom_folder / move_folder
 
     if not gamelist_path.exists():
         typer.echo("gamelist.xml not found in the specified folder.")
@@ -23,35 +34,48 @@ def find_unscraped_games(
     root = tree.getroot()
 
     # Get all scraped games from gamelist.xml
-    scraped_games = {game.find("path").text.strip().lstrip("./") for game in root.findall("game") if
-                     game.find("path") is not None}
+    scraped_games = set()
+    games_without_images = set()
+    games_with_invalid_names = set()
+
+    for game in root.findall("game"):
+        path_elem = game.find("path")
+        image_elem = game.find("image")
+        name_elem = game.find("name")
+
+        if path_elem is not None:
+            game_path = path_elem.text.strip().lstrip("./")
+            scraped_games.add(game_path)
+            if image_elem is None or not image_elem.text.strip():
+                games_without_images.add(game_path)
+            if name_elem is not None and name_elem.text.strip().startswith("ZZZ(notgame)"):
+                games_with_invalid_names.add(game_path)
 
     # Get all ROM files in the folder
     all_roms = {file.name for file in rom_folder.iterdir() if
                 file.is_file() and file.suffix.lower() not in {".xml", ".txt", ".bat"}}
 
-    # Find games without scraped data
-    unscraped_games = sorted(all_roms - scraped_games)
+    # Find games based on selected criteria
+    missing_games = sorted(all_roms - scraped_games) if find_missing else []
+    no_image_games = sorted(games_without_images) if find_no_image else []
+    invalid_name_games = sorted(games_with_invalid_names) if find_invalid_name else []
 
-    # Create the move folder if it doesn't exist
-    if not move_folder_path.exists():
-        move_folder_path.mkdir()
+    # Function to write results to files and move games
+    def write_output(game_list, txt_filename, bat_filename, target_folder):
+        if game_list:
+            target_path = rom_folder / target_folder
+            target_path.mkdir(exist_ok=True)
+            with open(rom_folder / txt_filename, "w", encoding="utf-8") as txt_file:
+                txt_file.write("\n".join(game_list))
+            with open(rom_folder / bat_filename, "w", encoding="utf-8") as bat_file:
+                for game in game_list:
+                    bat_file.write(f"move \"{rom_folder / game}\" \"{target_path}\"\n")
+            typer.echo(f"Found {len(game_list)} games. Output written to {txt_filename} and {bat_filename}.")
 
-    if not unscraped_games:
-        typer.echo("All games have scraped data. No files to move.")
-        return
-
-    # Write to text file
-    with open(output_txt, "w", encoding="utf-8") as txt_file:
-        txt_file.write("\n".join(unscraped_games))
-
-    # Write batch file
-    with open(output_bat, "w", encoding="utf-8") as bat_file:
-        bat_file.write(f"mkdir \"{move_folder_path}\"\n")
-        for game in unscraped_games:
-            bat_file.write(f"move \"{rom_folder / game}\" \"{move_folder_path}\"\n")
-
-    typer.echo(f"Found {len(unscraped_games)} unscraped games. Output written to {output_txt} and {output_bat}.")
+    # Write outputs for each category
+    write_output(missing_games, UNSCRAPED_TXT, UNSCRAPED_BAT, MISSING_GAMES_FOLDER)
+    write_output(no_image_games, NO_IMAGE_TXT, NO_IMAGE_BAT, NO_IMAGE_FOLDER)
+    write_output(invalid_name_games, INVALID_NAME_TXT, INVALID_NAME_BAT, INVALID_NAME_FOLDER)
 
 
 if __name__ == "__main__":
