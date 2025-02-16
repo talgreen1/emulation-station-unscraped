@@ -1,8 +1,23 @@
+import shutil
 import xml.etree.ElementTree as ET
 import typer
 import os
 from pathlib import Path
 from datetime import datetime
+
+# Constants for output file names and directories
+UNSCRAPED_TXT = "#unscraped_games.txt"
+UNSCRAPED_BAT = "#move_unscraped_games.bat"
+NO_IMAGE_TXT = "#games_without_images.txt"
+NO_IMAGE_BAT = "#move_games_without_images.bat"
+INVALID_NAME_TXT = "#games_invalid_names.txt"
+INVALID_NAME_BAT = "#move_games_invalid_names.bat"
+
+MISSING_GAMES_FOLDER = "missing_games"
+NO_IMAGE_FOLDER = "no_image_games"
+INVALID_NAME_FOLDER = "invalid_name_games"
+
+ZZZ_PREFIX = "ZZZ(notgame)"
 
 def hide_games(
     gamelist_path: str = typer.Argument(..., help="Path to the gamelist.xml file"),
@@ -14,20 +29,20 @@ def hide_games(
         typer.echo("gamelist.xml not found in the specified folder.")
         raise typer.Exit(1)
 
-    # Create a copy of the original gamelist.xml file with a timestamp
+    # Create a backup of the gamelist.xml file
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    original_gamelist_path = f"{gamelist_path}.original_{timestamp}"
-    os.rename(gamelist_path, original_gamelist_path)
+    backup_path = gamelist_path.parent / f"{gamelist_path.stem}_backup_{timestamp}.xml"
+    shutil.copy(gamelist_path, backup_path)
 
     # Parse the original gamelist.xml file
-    tree = ET.parse(original_gamelist_path)
+    tree = ET.parse(gamelist_path)
     root = tree.getroot()
 
     # Hide games that start with 'ZZZ(notgame)'
     if hide_zzz:
         for game in root.findall("game"):
             name_elem = game.find("name")
-            if name_elem is not None and name_elem.text.strip().startswith("ZZZ(notgame)"):
+            if name_elem is not None and name_elem.text.strip().startswith(ZZZ_PREFIX):
                 game.set("hidden", "true")
 
     # Hide games without an image tag
