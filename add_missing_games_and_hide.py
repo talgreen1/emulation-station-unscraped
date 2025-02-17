@@ -21,6 +21,7 @@ def hide_games(
     gamelist_dir: str = typer.Argument(..., help="Path to the directory containing gamelist.xml"),
     ignore_folders: str = typer.Option(None, help="Comma-separated list of subfolders to ignore")
 ):
+
     gamelist_path = Path(gamelist_dir).resolve() / "gamelist.xml"
     if not gamelist_path.exists():
         typer.echo("gamelist.xml not found in the specified folder.")
