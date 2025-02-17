@@ -6,12 +6,10 @@ from pathlib import Path
 from datetime import datetime
 
 # Constants for output file names and directories
-UNSCRAPED_TXT = "#unscraped_games.txt"
-UNSCRAPED_BAT = "#move_unscraped_games.bat"
+
 NO_IMAGE_TXT = "#games_without_images.txt"
-NO_IMAGE_BAT = "#move_games_without_images.bat"
 INVALID_NAME_TXT = "#games_invalid_names.txt"
-INVALID_NAME_BAT = "#move_games_invalid_names.bat"
+
 
 MISSING_GAMES_FOLDER = "missing_games"
 NO_IMAGE_FOLDER = "no_image_games"
@@ -39,6 +37,7 @@ def hide_games(
     root = tree.getroot()
 
     # Hide games that start with 'ZZZ(notgame)'
+    invalid_name_games = []
     if hide_zzz:
         for game in root.findall("game"):
             name_elem = game.find("name")
@@ -47,8 +46,10 @@ def hide_games(
                 if hidden_elem is None:  # If it doesn't exist, create it
                     hidden_elem = ET.SubElement(game, "hidden")
                     hidden_elem.text = "true"
+                invalid_name_games.append(name_elem.text.strip())
 
     # Hide games without an image tag
+    no_image_games = []
     if hide_no_image:
         for game in root.findall("game"):
             image_elem = game.find("image")
@@ -57,6 +58,19 @@ def hide_games(
                 if hidden_elem is None:  # If it doesn't exist, create it
                     hidden_elem = ET.SubElement(game, "hidden")
                     hidden_elem.text = "true"
+                name_elem = game.find("name")
+                if name_elem is not None:
+                    no_image_games.append(name_elem.text.strip())
+
+    # Write the names of the hidden games to files
+    if invalid_name_games:
+        with open(gamelist_path.parent / INVALID_NAME_TXT, "w", encoding="utf-8") as txt_file:
+            txt_file.write("\n".join(invalid_name_games))
+        print(f"Found {len(invalid_name_games)} games with invalid names (starting with 'zzz').")
+    if no_image_games:
+        with open(gamelist_path.parent / NO_IMAGE_TXT, "w", encoding="utf-8") as txt_file:
+            txt_file.write("\n".join(no_image_games))
+        print(f"Found {len(no_image_games)} games without images.")
 
     # Write the modified gamelist.xml file
     tree.write(gamelist_path)
