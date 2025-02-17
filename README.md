@@ -1,56 +1,85 @@
-# Find Unscraped ROMs
+# GameList XML Utilities
 
-## Overview
-This script scans a folder containing ROM files and identifies games that meet specific conditions:
-1. **Missing from gamelist.xml** – ROMs that are not listed in `gamelist.xml`.
-2. **Without an image** – Games listed in `gamelist.xml` but missing an `<image>` tag.
-3. **Invalid names** – Games whose `<name>` tag starts with `ZZZ(notgame)`.
+## Background
+These Python scripts provide utilities for managing a `gamelist.xml` file, typically used in gaming systems to organize and display ROMs. The scripts help identify missing games, hide specific games, and manage unscraped game entries. They use `Typer` for command-line interaction and XML parsing to manipulate the `gamelist.xml` file effectively.
 
-For each category, the script generates:
-- A `.txt` file listing the affected ROMs.
-- A `.bat` file that moves these ROMs into category-specific folders.
+## Scripts Overview
 
-## Installation
-Ensure you have Python installed (version 3.6 or later). Install the required package:
+### 1. `add_missing_games_and_hide.py`
+#### Functionality
+This script scans the ROM folder, identifies missing games that are not listed in `gamelist.xml`, and adds them with a `hidden` status. It also backs up the original `gamelist.xml` file before making any modifications.
+
+#### Parameters
+- `gamelist_dir` (str, required): The path to the directory containing `gamelist.xml`.
+- `ignore_folders` (str, optional): A comma-separated list of subfolders to ignore during the scan.
+
+#### Outputs
+- A backup copy of `gamelist.xml`.
+- A list of missing games saved to `#games_missing_in_gamelist.txt`.
+- Updated `gamelist.xml` with missing games marked as hidden.
+
+#### Example Usage
 ```sh
-pip install typer
+python add_missing_games_and_hide.py /path/to/games --ignore_folders "ignored_folder1,ignored_folder2"
 ```
 
-## Usage
-Run the script using the following command:
+---
+
+### 2. `find_unscraped_games.py`
+#### Functionality
+This script scans the ROM folder and compares it with `gamelist.xml` to find:
+- Games that are missing from the `gamelist.xml`.
+- Games without an `<image>` tag.
+- Games where the `<name>` tag starts with `ZZZ(notgame)`.
+
+It then outputs lists of these games into text and batch files for further processing.
+
+#### Parameters
+- `rom_folder` (str, required): The path to the ROM folder.
+- `find_missing` (bool, optional, default=True): Whether to find games missing in `gamelist.xml`.
+- `find_no_image` (bool, optional, default=True): Whether to find games missing an `<image>` tag.
+- `find_invalid_name` (bool, optional, default=True): Whether to find games with an invalid name format (`ZZZ(notgame)`).
+
+#### Outputs
+- A list of missing games (`#unscraped_games.txt`) and a batch script (`#move_unscraped_games.bat`) to move them.
+- A list of games without images (`#games_without_images.txt`) and a batch script (`#move_games_without_images.bat`).
+- A list of games with invalid names (`#games_invalid_names.txt`) and a batch script (`#move_games_invalid_names.bat`).
+
+#### Example Usage
 ```sh
-python find_unscraped_roms.py <path_to_rom_folder>
+python find_unscraped_games.py /path/to/roms --find_missing True --find_no_image True --find_invalid_name True
 ```
-Optional flags:
-- `--find-missing` (default: `True`): Find games missing from `gamelist.xml`.
-- `--find-no-image` (default: `True`): Find games without an `<image>` tag.
-- `--find-invalid-name` (default: `True`): Find games with names starting with `ZZZ(notgame)`.
 
-Example usage:
+---
+
+### 3. `hide_games.py`
+#### Functionality
+This script hides games in `gamelist.xml` based on specific conditions:
+- Games with names starting with `ZZZ(notgame)`.
+- Games missing an `<image>` tag.
+- The ability to ignore specific folders during processing.
+
+It also creates a backup before modifying `gamelist.xml` and records hidden games in text files.
+
+#### Parameters
+- `gamelist_dir` (str, required): The directory containing `gamelist.xml`.
+- `hide_zzz` (bool, optional, default=True): Whether to hide games that start with `ZZZ(notgame)`.
+- `hide_no_image` (bool, optional, default=True): Whether to hide games missing an `<image>` tag.
+- `ignore_folders` (str, optional): A comma-separated list of subfolders to ignore.
+
+#### Outputs
+- A backup copy of `gamelist.xml`.
+- A list of games with invalid names saved to `#games_invalid_names.txt`.
+- A list of games without images saved to `#games_without_images.txt`.
+- An updated `gamelist.xml` with the selected games marked as hidden.
+
+#### Example Usage
 ```sh
-python find_unscraped_roms.py "C:\path\to\roms" --find-no-image False
+python hide_games.py /path/to/games --hide_zzz True --hide_no_image True --ignore_folders "ignored_folder1"
 ```
-This will find missing and invalid name games but skip checking for games without images.
 
-## Output
-The script generates the following files in the ROM folder:
+---
 
-| Category | TXT File | BAT File | Destination Folder |
-|----------|------------|------------|-----------------|
-| Missing from gamelist | `unscraped_games.txt` | `move_unscraped_games.bat` | `missing_games/` |
-| Without an image | `games_without_images.txt` | `move_games_without_images.bat` | `no_image_games/` |
-| Invalid names | `games_invalid_names.txt` | `move_games_invalid_names.bat` | `invalid_name_games/` |
+## Summary
+These scripts provide an efficient way to manage `gamelist.xml`, ensuring missing games are tracked, unscraped games are identified, and unwanted games are hidden. They are useful for maintaining a clean and well-organized game library.
 
-## How It Works
-1. Parses `gamelist.xml` to get all listed games.
-2. Compares against actual ROM files in the folder.
-3. Identifies games in each category and generates corresponding TXT and BAT files.
-4. Runs `.bat` files to move affected games to their respective folders.
-
-## Notes
-- The script does **not** delete any files, only moves them.
-- Ensure `gamelist.xml` is present in the ROM folder before running the script.
-- The output files and folders are automatically created.
-
-## License
-This script is free to use and modify. Contributions are welcome!

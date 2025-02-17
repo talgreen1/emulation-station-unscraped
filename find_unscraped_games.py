@@ -22,6 +22,24 @@ def find_unscraped_games(
         find_no_image: bool = typer.Option(True, help="Find games without an <image> tag."),
         find_invalid_name: bool = typer.Option(True, help="Find games where <name> starts with 'ZZZ(notgame)'.")
 ):
+    """
+       Scans a given ROM folder and compares it against the `gamelist.xml` file to identify unsorted games.
+       Outputs the results to text files and batch scripts for easy handling.
+
+       Args:
+           rom_folder (str): The path to the ROM folder that will be scanned for games.
+           find_missing (bool): If True, finds games in the ROM folder that are missing in the gamelist.xml.
+           find_no_image (bool): If True, finds games that do not have an <image> tag in the gamelist.xml.
+           find_invalid_name (bool): If True, finds games where the <name> tag starts with 'ZZZ(notgame)'.
+
+       Outputs:
+           - A text file listing missing games (unscraped).
+           - A batch file to move missing games to the `missing_games` folder.
+           - A text file listing games without images.
+           - A batch file to move games without images to the `no_image_games` folder.
+           - A text file listing games with invalid names.
+           - A batch file to move games with invalid names to the `invalid_name_games` folder.
+       """
     rom_folder = Path(rom_folder).resolve()
     gamelist_path = rom_folder / "gamelist.xml"
 
