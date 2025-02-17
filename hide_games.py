@@ -21,8 +21,8 @@ ZZZ_PREFIX = "ZZZ(notgame)"
 
 def hide_games(
     gamelist_path: str = typer.Argument(..., help="Path to the gamelist.xml file"),
-    hide_zzz: bool = typer.Option(False, help="Hide games that start with 'ZZZ(notgame)'"),
-    hide_no_image: bool = typer.Option(False, help="Hide games without an image tag")
+    hide_zzz: bool = typer.Option(True, help="Hide games that start with 'ZZZ(notgame)'"),
+    hide_no_image: bool = typer.Option(True, help="Hide games without an image tag")
 ):
     gamelist_path = Path(gamelist_path).resolve()
     if not gamelist_path.exists():
@@ -43,14 +43,20 @@ def hide_games(
         for game in root.findall("game"):
             name_elem = game.find("name")
             if name_elem is not None and name_elem.text.strip().startswith(ZZZ_PREFIX):
-                game.set("hidden", "true")
+                hidden_elem = game.find("hidden")  # Check if the hidden element already exists
+                if hidden_elem is None:  # If it doesn't exist, create it
+                    hidden_elem = ET.SubElement(game, "hidden")
+                    hidden_elem.text = "true"
 
     # Hide games without an image tag
     if hide_no_image:
         for game in root.findall("game"):
             image_elem = game.find("image")
             if image_elem is None or not image_elem.text.strip():
-                game.set("hidden", "true")
+                hidden_elem = game.find("hidden")  # Check if the hidden element already exists
+                if hidden_elem is None:  # If it doesn't exist, create it
+                    hidden_elem = ET.SubElement(game, "hidden")
+                    hidden_elem.text = "true"
 
     # Write the modified gamelist.xml file
     tree.write(gamelist_path)
