@@ -79,12 +79,15 @@ def hide_games(
     # Hide games that are missing from gamelist.xml
     missing_games = []
     if hide_missing:
-        rom_files = {file.name for file in Path(gamelist_dir).iterdir() if file.is_file() and file.suffix in [".zip", ".7z", ".nes", ".sfc", ".gba"]}  # Add relevant extensions
+        # rom_files = {file.name for file in Path(gamelist_dir).iterdir() if file.is_file() and file.suffix in [".zip", ".7z", ".nes", ".sfc", ".gba"]}  # Add relevant extensions
+        rom_files = {file.relative_to(gamelist_dir).as_posix() for file in Path(gamelist_dir).rglob('*') if
+                     file.is_file() and file.suffix in [".zip", ".7z", ".nes", ".sfc",
+                                                        ".gba"]}  # Add relevant extensions
         missing_roms = rom_files - existing_games
         for rom in missing_roms:
             game_elem = ET.SubElement(root, "game")
             path_elem = ET.SubElement(game_elem, "path")
-            path_elem.text = f"./{rom}"
+            path_elem.text = f"./{rom}"  # This ensures the subfolder is preserved
             hidden_elem = ET.SubElement(game_elem, "hidden")
             hidden_elem.text = "true"
             name_elem = ET.SubElement(game_elem, "name")
