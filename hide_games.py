@@ -23,6 +23,25 @@ def hide_games(
     hide_no_image: bool = typer.Option(True, help="Hide games without an image tag"),
     ignore_folders: str = typer.Option(None, help="Comma-separated list of subfolders to ignore")
 ):
+    """
+      Hide games in a 'gamelist.xml' based on specific criteria and update the file. This function will:
+
+    1. Create a backup of the original 'gamelist.xml' file.
+    2. Hide games that start with 'ZZZ(notgame)' if the 'hide_zzz' option is True.
+    3. Hide games that do not have an image tag if the 'hide_no_image' option is True.
+    4. Optionally ignore specific subfolders while applying the hide filters.
+    5. Write the names of hidden games (invalid name or no image) into text files.
+    6. Update the 'gamelist.xml' file by marking the hidden games with a <hidden>true</hidden> tag.
+
+    Args:
+        gamelist_dir (str): The directory containing the 'gamelist.xml' file.
+        hide_zzz (bool): Whether to hide games that start with 'ZZZ(notgame)'.
+        hide_no_image (bool): Whether to hide games that lack an image tag.
+        ignore_folders (str): A comma-separated list of subfolders to ignore when hiding games.
+
+    Raises:
+        typer.Exit: If the 'gamelist.xml' file is not found in the specified directory.
+    """
     gamelist_path = Path(gamelist_dir).resolve() / "gamelist.xml"
     if not gamelist_path.exists():
         typer.echo("gamelist.xml not found in the specified folder.")

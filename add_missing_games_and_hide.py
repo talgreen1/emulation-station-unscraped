@@ -21,7 +21,20 @@ def hide_games(
     gamelist_dir: str = typer.Argument(..., help="Path to the directory containing gamelist.xml"),
     ignore_folders: str = typer.Option(None, help="Comma-separated list of subfolders to ignore")
 ):
+    """
+       This function scans a specified directory for ROM files and compares it to the provided `gamelist.xml` file.
+       It identifies any missing games in the `gamelist.xml`, adds them with a "hidden" status, and creates a backup
+       of the original `gamelist.xml` file. It also optionally ignores specified subfolders during the scan.
 
+       Args:
+           gamelist_dir (str): The path to the directory containing `gamelist.xml` to scan for missing games.
+           ignore_folders (str, optional): A comma-separated list of subfolders to exclude from the scan. Defaults to None.
+
+       Outputs:
+           - A backup of the original `gamelist.xml` file, saved with a timestamp.
+           - A list of missing games is saved to `#games_missing_in_gamelist.txt`.
+           - The `gamelist.xml` is updated to include the missing games, marking them as hidden.
+       """
     gamelist_path = Path(gamelist_dir).resolve() / "gamelist.xml"
     if not gamelist_path.exists():
         typer.echo("gamelist.xml not found in the specified folder.")
